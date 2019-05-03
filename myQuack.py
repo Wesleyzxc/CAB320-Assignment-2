@@ -11,7 +11,8 @@ You are welcome to use the pandas library if you know it.
 
 
 '''
-#import tensorflow as tf
+import tensorflow as tf
+import numpy as np
 import csv
 
 
@@ -25,8 +26,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
     
     '''
-#    return [ (1234567, 'Ada', 'Lovelace'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos') ]
-    raise NotImplementedError()
+    return [ (9930141, 'Daryl', 'Tan'), (9972676, 'Wesley', 'Kok') ]
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -51,16 +51,25 @@ def prepare_dataset(dataset_path):
     ##         "INSERT YOUR CODE HERE"    
     with open(dataset_path) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
-        line_count = 0
+        
+        row_count = sum(1 for row in csv_reader)    
+        X = np.empty([row_count,32], dtype='object')
+        csvfile.seek(0) # Reset file to top
+         
+        new_line = 0
         for row in csv_reader:
-            if line_count == 0:
-                print(f'Column names are {", ".join(row)}')
-                line_count += 1
-            else:
-                print(f'\t{row[0]} is ID {row[1]} is class label')
-                line_count += 1
-            print(f'Processed {line_count} lines.')
+            valueCount = 0
+            for eachValue in row:
+                X[new_line, valueCount] = eachValue
+                valueCount += 1
+            new_line += 1
+    y = np.array(['B', 'M'])
+#        print(X[0,:])
+    return X,y
 
+# Test function
+            
+prepare_dataset("medical_records.data")
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def build_DecisionTree_classifier(X_training, y_training):
