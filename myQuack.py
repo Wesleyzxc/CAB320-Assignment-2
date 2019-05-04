@@ -12,9 +12,10 @@ You are welcome to use the pandas library if you know it.
 
 '''
 import tensorflow as tf
+import keras
 import numpy as np
 import csv
-
+from sklearn import tree
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,8 +70,9 @@ def prepare_dataset(dataset_path):
 
 # Test function
             
-prepare_dataset("medical_records.data")
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+X = [[0, 0], [1, 1]]
+Y = [0, 1]
 
 def build_DecisionTree_classifier(X_training, y_training):
     '''  
@@ -84,7 +86,13 @@ def build_DecisionTree_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
-    raise NotImplementedError()
+
+    clf = tree.DecisionTreeClassifier()
+    clf = clf.fit(X_training,y_training)
+    print(clf.predict([[2., 2.]]))
+    
+    
+build_DecisionTree_classifier(X,Y)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
