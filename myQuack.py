@@ -52,11 +52,14 @@ def prepare_dataset(dataset_path):
     '''
     ##         "INSERT YOUR CODE HERE"
     
-    # Read file with numpy https://stackoverflow.com/questions/3518778/how-do-i-read-csv-data-into-a-record-array-in-numpy
-    my_data = np.genfromtxt(dataset_path, delimiter=',', dtype=None)
-    # Extract only data, leave out ID and class label
-    X = np.array([tuple(value)[2:] for value in my_data])
-    y = np.array([1 if value[1]==b"M" else 0 for value in my_data])
+    with open(dataset_path) as csvfile:
+        csv_reader = csv.reader(csvfile, delimiter=',')
+        X = np.array([tuple(value) for value in csv_reader])
+        csvfile.seek(0)
+        y = np.array([1 if value[1] == 'M' else 0 for value in csv_reader])
+
+            
+#    print(len(X[0,:]))
     return X,y
 
 # Test function
