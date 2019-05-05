@@ -15,7 +15,8 @@ import tensorflow as tf
 import keras
 import numpy as np
 import csv
-from sklearn import tree
+from sklearn import tree, datasets
+from sklearn.model_selection import GridSearchCV
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,22 +56,29 @@ def prepare_dataset(dataset_path):
         
         row_count = sum(1 for row in csv_reader)    
         X = np.empty([row_count,32], dtype='object')
+        y = np.empty([row_count], dtype='int') 
         csvfile.seek(0) # Reset file to top
          
         new_line = 0
         for row in csv_reader:
             valueCount = 0
+            if row[1] == 'M':
+                y[new_line] = 1
+            else:
+                y[new_line] = 0
             for eachValue in row:
                 X[new_line, valueCount] = eachValue
                 valueCount += 1
             new_line += 1
-    y = np.array(['B', 'M'])
-#        print(X[0,:])
+#    print(len(X[0,:]))
     return X,y
 
 # Test function
-            
+        
+prepare_dataset("medical_records.data")    
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+#Testing with fixednumbers
 X = [[0, 0], [1, 1]]
 Y = [0, 1]
 
@@ -87,12 +95,19 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     ##         "INSERT YOUR CODE HERE"    
 
+
     clf = tree.DecisionTreeClassifier()
-    clf = clf.fit(X_training,y_training)
-    print(clf.predict([[2., 2.]]))
+    gs = GridSearchCV(clf, param_grid={ 'min_samples_leaf': 5})
     
     
-build_DecisionTree_classifier(X,Y)
+    
+    gs.fit(X_training, y_training)
+#    results = gs.cv_results_
+    return gs
+#    print(clf.predict([[2., 2.]]))
+    
+    
+#build_DecisionTree_classifier(X,Y)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
