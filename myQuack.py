@@ -50,27 +50,13 @@ def prepare_dataset(dataset_path):
     @return
 	X,y
     '''
-    ##         "INSERT YOUR CODE HERE"    
-    with open(dataset_path) as csvfile:
-        csv_reader = csv.reader(csvfile, delimiter=',')
-        
-        row_count = sum(1 for row in csv_reader)    
-        X = np.empty([row_count,32], dtype='object')
-        y = np.empty([row_count], dtype='int') 
-        csvfile.seek(0) # Reset file to top
-         
-        new_line = 0
-        for row in csv_reader:
-            valueCount = 0
-            if row[1] == 'M':
-                y[new_line] = 1
-            else:
-                y[new_line] = 0
-            for eachValue in row:
-                X[new_line, valueCount] = eachValue
-                valueCount += 1
-            new_line += 1
-#    print(len(X[0,:]))
+    ##         "INSERT YOUR CODE HERE"
+    
+    # Read file with numpy https://stackoverflow.com/questions/3518778/how-do-i-read-csv-data-into-a-record-array-in-numpy
+    my_data = np.genfromtxt(dataset_path, delimiter=',', dtype=None)
+    # Extract only data, leave out ID and class label
+    X = np.array([tuple(value)[2:] for value in my_data])
+    y = np.array([1 if value[1]==b"M" else 0 for value in my_data])
     return X,y
 
 # Test function
@@ -79,8 +65,8 @@ prepare_dataset("medical_records.data")
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 #Testing with fixednumbers
-X = [[0, 0], [1, 1]]
-Y = [0, 1]
+#X = [[0, 0], [1, 1]]
+#Y = [0, 1]
 
 def build_DecisionTree_classifier(X_training, y_training):
     '''  
@@ -97,7 +83,9 @@ def build_DecisionTree_classifier(X_training, y_training):
 
 
     clf = tree.DecisionTreeClassifier()
-    gs = GridSearchCV(clf, param_grid={ 'min_samples_leaf': 5})
+    gs = GridSearchCV(clf, param_grid={ 'splitter': ['best', 'random'],
+                                        'max_depth': np.linspace(DT_DEPTH_START, DT_DEPTH_STOP,
+                                                                 DT_DEPTH_NUM)})
     
     
     
@@ -107,7 +95,7 @@ def build_DecisionTree_classifier(X_training, y_training):
 #    print(clf.predict([[2., 2.]]))
     
     
-#build_DecisionTree_classifier(X,Y)
+#build_DecisionTree_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
