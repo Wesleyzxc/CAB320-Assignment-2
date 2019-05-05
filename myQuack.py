@@ -54,12 +54,11 @@ def prepare_dataset(dataset_path):
     
     with open(dataset_path) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
-        X = np.array([tuple(value) for value in csv_reader])
+        X = np.array([tuple(value)[2:] for value in csv_reader])
         csvfile.seek(0)
         y = np.array([1 if value[1] == 'M' else 0 for value in csv_reader])
 
             
-#    print(len(X[0,:]))
     return X,y
 
 # Test function
@@ -86,9 +85,7 @@ def build_DecisionTree_classifier(X_training, y_training):
 
 
     clf = tree.DecisionTreeClassifier()
-    gs = GridSearchCV(clf, param_grid={ 'splitter': ['best', 'random'],
-                                        'max_depth': np.linspace(DT_DEPTH_START, DT_DEPTH_STOP,
-                                                                 DT_DEPTH_NUM)})
+    gs = GridSearchCV(clf, param_grid={ }, cv=3)
     
     
     
@@ -98,7 +95,7 @@ def build_DecisionTree_classifier(X_training, y_training):
 #    print(clf.predict([[2., 2.]]))
     
     
-#build_DecisionTree_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
+build_DecisionTree_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
