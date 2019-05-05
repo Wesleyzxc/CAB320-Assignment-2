@@ -15,7 +15,7 @@ import tensorflow as tf
 import keras
 import numpy as np
 import csv
-from sklearn import tree, datasets
+from sklearn import tree, datasets, neighbors, svm
 from sklearn.model_selection import GridSearchCV
 
 
@@ -82,20 +82,15 @@ def build_DecisionTree_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
-
-
     clf = tree.DecisionTreeClassifier()
-    gs = GridSearchCV(clf, param_grid={ }, cv=3)
+    gs = GridSearchCV(clf, param_grid={  }, cv=3)
     
-    
-    
-    gs.fit(X_training, y_training)
-#    results = gs.cv_results_
+    clf.fit(X_training[0:250], y_training[0:250])
+    print(clf.score(X_training[250:500], y_training[250:500]))
     return gs
-#    print(clf.predict([[2., 2.]]))
     
     
-build_DecisionTree_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
+x = build_DecisionTree_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -111,7 +106,15 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
-    raise NotImplementedError()
+    X_training = X_training.astype(np.float64)
+    clf = neighbors.KNeighborsClassifier()
+    gs = GridSearchCV(clf, param_grid={  }, cv=3)
+    
+    clf.fit(X_training[0:250], y_training[0:250])
+    print(clf.score(X_training[250:500], y_training[250:500]))
+    return gs
+    
+x = build_NearrestNeighbours_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -127,6 +130,8 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
+    
+    
     raise NotImplementedError()
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
