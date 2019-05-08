@@ -132,7 +132,7 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
-    clf = svm.SVC()
+    clf = svm.SVC(gamma="scale")
     C = np.arange(1, 10, dtype='float')
     gs = GridSearchCV(clf, param_grid={ 'C':C }, cv=3)
     gs.fit(X_training, y_training)
