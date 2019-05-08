@@ -57,7 +57,10 @@ def prepare_dataset(dataset_path):
         X = np.array([tuple(value)[2:] for value in csv_reader])
         csvfile.seek(0)
         y = np.array([1 if value[1] == 'M' else 0 for value in csv_reader])
-
+        
+        # Safety net for new versions (warning messages)
+        X = X.astype(np.float64)
+        y = y.astype(np.float64)
             
     return X,y
 
@@ -103,12 +106,11 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
-    X_training = X_training.astype(np.float64)
     clf = neighbors.KNeighborsClassifier()
     gs = GridSearchCV(clf, param_grid={  }, cv=3)
     
-    clf.fit(X_training[0:250], y_training[0:250])
-    print(clf.score(X_training[250:500], y_training[250:500]))
+    gs.fit(X_training, y_training)
+#    print(clf.score(X_training[250:500], y_training[250:500]))
     return gs
     
 #x = build_NearrestNeighbours_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
@@ -155,8 +157,11 @@ if __name__ == "__main__":
     pass
     X, y = prepare_dataset("medical_records.data")
     X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=0.5)
-    clf = build_DecisionTree_classifier(X_training, y_training)
-    print(clf.predict(X_testing))
+    clfDT = build_DecisionTree_classifier(X_training, y_training)
+    print(clfDT.predict(X_testing))
+    
+    clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
+    print(clfKNN.predict(X_testing))
     
     # Write a main part that calls the different 
     # functions to perform the required tasks and repeat your experiments.
