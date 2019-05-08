@@ -12,11 +12,11 @@ You are welcome to use the pandas library if you know it.
 
 '''
 import tensorflow as tf
-import keras
+#import keras
 import numpy as np
 import csv
 from sklearn import tree, datasets, neighbors, svm
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,9 +61,6 @@ def prepare_dataset(dataset_path):
             
     return X,y
 
-# Test function
-        
-prepare_dataset("medical_records.data")    
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 #Testing with fixednumbers
@@ -85,12 +82,12 @@ def build_DecisionTree_classifier(X_training, y_training):
     clf = tree.DecisionTreeClassifier()
     gs = GridSearchCV(clf, param_grid={  }, cv=3)
     
-    clf.fit(X_training[0:250], y_training[0:250])
-    print(clf.score(X_training[250:500], y_training[250:500]))
+    gs.fit(X_training, y_training)
+#    print(gs.score(X_training[250:500], y_training[250:500]))
     return gs
     
     
-x = build_DecisionTree_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
+#x = build_DecisionTree_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -114,7 +111,7 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     print(clf.score(X_training[250:500], y_training[250:500]))
     return gs
     
-x = build_NearrestNeighbours_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
+#x = build_NearrestNeighbours_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -156,6 +153,11 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 
 if __name__ == "__main__":
     pass
+    X, y = prepare_dataset("medical_records.data")
+    X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=0.5)
+    clf = build_DecisionTree_classifier(X_training, y_training)
+    print(clf.predict(X_testing))
+    
     # Write a main part that calls the different 
     # functions to perform the required tasks and repeat your experiments.
 
