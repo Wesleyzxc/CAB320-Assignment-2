@@ -16,7 +16,8 @@ You are welcome to use the pandas library if you know it.
 import numpy as np
 import csv
 from sklearn import tree, datasets, neighbors, svm
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score, cross_val_predict
+from sklearn.metrics import confusion_matrix
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,7 +84,8 @@ def build_DecisionTree_classifier(X_training, y_training):
     '''
     ##         "INSERT YOUR CODE HERE"    
     clf = tree.DecisionTreeClassifier()
-    gs = GridSearchCV(clf, param_grid={  }, iid=True, cv=3)
+    tree_depth = np.arange(1,100)
+    gs = GridSearchCV(clf, param_grid={'max_depth':tree_depth}, iid=True, cv=3)
     
     gs.fit(X_training, y_training)
 #    print(gs.score(X_training[250:500], y_training[250:500]))
@@ -107,7 +109,8 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
     '''
     ##         "INSERT YOUR CODE HERE"    
     clf = neighbors.KNeighborsClassifier()
-    gs = GridSearchCV(clf, param_grid={  }, iid=True, cv=3)
+    num_neighbours = np.arange(5,100)
+    gs = GridSearchCV(clf, param_grid={ 'n_neighbors':num_neighbours  }, iid=True, cv=3)
     
     gs.fit(X_training, y_training)
 #    print(clf.score(X_training[250:500], y_training[250:500]))
@@ -129,8 +132,9 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
-    clf = svm.SVC(gamma="scale")
-    gs = GridSearchCV(clf, param_grid={  }, cv=3)
+    clf = svm.SVC()
+    C = np.arange(1, 10, dtype='float')
+    gs = GridSearchCV(clf, param_grid={ 'C':C }, cv=3)
     gs.fit(X_training, y_training)
     return gs
     
@@ -159,13 +163,21 @@ if __name__ == "__main__":
     X, y = prepare_dataset("medical_records.data")
     X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=0.3)
     clfDT = build_DecisionTree_classifier(X_training, y_training)
+    K_fold_prediction = cross_val_score(clfDT, X_testing, y_testing, cv=3)
+    predicted = clfDT.predict(X_testing)
+    print(predicted)
+    print(confusion_matrix(y_testing, predicted))
     print(clfDT.score(X_testing, y_testing))
+    print(clfDT.best_params_)
     
     clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
     print(clfKNN.score(X_testing, y_testing))
+    print(clfKNN.best_params_)
     
     clfSVM = build_SupportVectorMachine_classifier(X_training, y_training)
     print(clfSVM.score(X_testing, y_testing))
+    print(clfSVM.best_params_)
+    
     
     # Write a main part that calls the different 
     # functions to perform the required tasks and repeat your experiments.
