@@ -13,7 +13,6 @@ You are welcome to use the pandas library if you know it.
 '''
 #import tensorflow as tf
 import keras
-import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
@@ -23,7 +22,7 @@ import csv
 from sklearn import tree, datasets, neighbors, svm
 from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score, cross_val_predict
 from sklearn.metrics import confusion_matrix
-
+from sklearn.preprocessing import StandardScaler
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -136,7 +135,7 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
     '''
     ##         "INSERT YOUR CODE HERE"    
     clf = svm.SVC(gamma="scale")
-    C = np.arange(1, 10, dtype='float')
+    C = np.arange(0.1, 5, dtype='float')
     gs = GridSearchCV(clf, param_grid={ 'C':C }, cv=3)
     gs.fit(X_training, y_training)
     return gs
@@ -155,11 +154,17 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 
     @return
 	clf : the classifier built in this function
+    
     '''
+    
+    scaler = StandardScaler()
+    scaler.fit(X_training)
+    X_train_scaled = scaler.transform(X_training)
+
     model = Sequential()
-    model.add(Dense(64, activation='relu'))
+    model.add(Dense(60, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(64, activation='relu'))
+    model.add(Dense(60, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
     
@@ -167,8 +172,8 @@ def build_NeuralNetwork_classifier(X_training, y_training):
                   optimizer='rmsprop',
                   metrics=['accuracy'])
     
-    model.fit(X_training, y_training,
-              batch_size=128) 
+    model.fit(X_train_scaled, y_training,
+              batch_size=30) 
 #    score = model.evaluate(X_training, y_training, batch_size=128)\
     return model
 
@@ -176,7 +181,7 @@ def build_NeuralNetwork_classifier(X_training, y_training):
 
 if __name__ == "__main__":
     pass
-#    X, y = prepare_dataset("medical_records.data")
+    X, y = prepare_dataset("medical_records.data")
     X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=0.2, shuffle=True)
     
 #    clfDT = build_DecisionTree_classifier(X_training, y_training)
@@ -191,7 +196,7 @@ if __name__ == "__main__":
 #    clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
 #    print(clfKNN.score(X_testing, y_testing))
 #    print(clfKNN.best_params_)
-#    
+##    
 #    clfSVM = build_SupportVectorMachine_classifier(X_training, y_training)
 #    print(clfSVM.score(X_testing, y_testing))
 #    print(clfSVM.best_params_)
@@ -200,7 +205,7 @@ if __name__ == "__main__":
     # Write a main part that calls the different 
     # functions to perform the required tasks and repeat your experiments.
     clf = build_NeuralNetwork_classifier(X_training, y_training)
-    score = model.evaluate(X_testing, y_testing, batch_size=128)
+    score = clf.evaluate(X_testing, y_testing, batch_size=128)
     print(score)
 
     # call your functions here
