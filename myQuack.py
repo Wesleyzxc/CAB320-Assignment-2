@@ -15,7 +15,7 @@ You are welcome to use the pandas library if you know it.
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
-from keras.optimizers import SGD
+from keras.optimizers import RMSprop
 
 import numpy as np
 import csv
@@ -157,6 +157,7 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     
     '''
     
+    # Normalising training set
     scaler = StandardScaler()
     scaler.fit(X_training)
     X_train_scaled = scaler.transform(X_training)
@@ -168,44 +169,45 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     model.add(Dropout(0.5))
     model.add(Dense(1, activation='sigmoid'))
     
+    rms = RMSprop(lr=0.001)
     model.compile(loss='binary_crossentropy',
-                  optimizer='rmsprop',
+                  optimizer=rms,
                   metrics=['accuracy'])
     
     model.fit(X_train_scaled, y_training,
-              batch_size=30) 
+              batch_size=30, epochs=150) 
 #    score = model.evaluate(X_training, y_training, batch_size=128)\
     return model
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 if __name__ == "__main__":
-    pass
     X, y = prepare_dataset("medical_records.data")
     X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=0.2, shuffle=True)
     
-#    clfDT = build_DecisionTree_classifier(X_training, y_training)
-#    K_fold_prediction = cross_val_score(clfDT, X_testing, y_testing, cv=3)
-#    print(K_fold_prediction)
-#    predicted = clfDT.predict(X_testing)
-#    print(predicted)
-#    print(confusion_matrix(y_testing, predicted))
-#    print(clfDT.score(X_testing, y_testing))
-#    print(clfDT.best_params_)
-#    
-#    clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
-#    print(clfKNN.score(X_testing, y_testing))
-#    print(clfKNN.best_params_)
-##    
-#    clfSVM = build_SupportVectorMachine_classifier(X_training, y_training)
-#    print(clfSVM.score(X_testing, y_testing))
-#    print(clfSVM.best_params_)
+    clfDT = build_DecisionTree_classifier(X_training, y_training)
+    K_fold_prediction = cross_val_score(clfDT, X_testing, y_testing, cv=3)
+    print(K_fold_prediction)
+    predicted = clfDT.predict(X_testing)
+    print(confusion_matrix(y_testing, predicted))
+    print(clfDT.score(X_testing, y_testing))
+    print(clfDT.best_params_)
+    
+    clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
+    predicted = clfKNN.predict(X_testing)
+    print(clfKNN.score(X_testing, y_testing))
+    print(clfKNN.best_params_)
+    
+    clfSVM = build_SupportVectorMachine_classifier(X_training, y_training)
+    predicted = clfSVM.predict(X_testing)
+    print(clfSVM.score(X_testing, y_testing))
+    print(clfSVM.best_params_)
     
     
     # Write a main part that calls the different 
     # functions to perform the required tasks and repeat your experiments.
     clf = build_NeuralNetwork_classifier(X_training, y_training)
-    score = clf.evaluate(X_testing, y_testing, batch_size=128)
+    score = clf.evaluate(X_testing, y_testing, batch_size=30)
     print(score)
 
     # call your functions here
