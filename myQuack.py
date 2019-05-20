@@ -12,15 +12,15 @@ You are welcome to use the pandas library if you know it.
 
 '''
 #import tensorflow as tf
-import keras
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
+from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
-
+from keras.callbacks import EarlyStopping
+import math
 import numpy as np
 import csv
-from sklearn import tree, datasets, neighbors, svm
-from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score, cross_val_predict
+from sklearn import tree, neighbors, svm
+from sklearn.model_selection import GridSearchCV, train_test_split, cross_val_score
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
@@ -173,44 +173,52 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     model.compile(loss='binary_crossentropy',
                   optimizer=rms,
                   metrics=['accuracy'])
+    r = model.fit(X_train_scaled, y_training,
+              batch_size=30, epochs=150, verbose=0)
     
-    model.fit(X_train_scaled, y_training,
-              batch_size=30, epochs=150) 
+    acc = (r.history['acc'][-1])
+    print("Accuracy of: ", acc)
 #    score = model.evaluate(X_training, y_training, batch_size=128)\
     return model
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    
+def printReport(clf, X_test, y_test ):
+    predicted = clf.predict(X_test)
+    # binary classification to extract each data values
+    tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
+    K_fold_prediction = cross_val_score(clf, X_test, y_test, cv=3)
+    print("Cross validation scores are: ", K_fold_prediction)
+    print(tp, "/" , tp+fp , " predicted M correctly", fp, "/" , tp+fp, "predicted M wrongly")
+    print(tn, "/" , tn+fn , " predicted B correctly", fn, "/" , tn+fn, "predicted B wrongly")
+    print("Giving an accuracy of ", clf.score(X_test, y_test))
+    print("With the best parameters: ", clf.best_params_ , "\n")
 
 if __name__ == "__main__":
-    X, y = prepare_dataset("medical_records.data")
-    X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=0.2, shuffle=True)
-    
-    clfDT = build_DecisionTree_classifier(X_training, y_training)
-    K_fold_prediction = cross_val_score(clfDT, X_testing, y_testing, cv=3)
-    print(K_fold_prediction)
-    predicted = clfDT.predict(X_testing)
-    print(confusion_matrix(y_testing, predicted))
-    print(clfDT.score(X_testing, y_testing))
-    print(clfDT.best_params_)
-    
-    clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
-    predicted = clfKNN.predict(X_testing)
-    print(clfKNN.score(X_testing, y_testing))
-    print(clfKNN.best_params_)
-    
-    clfSVM = build_SupportVectorMachine_classifier(X_training, y_training)
-    predicted = clfSVM.predict(X_testing)
-    print(clfSVM.score(X_testing, y_testing))
-    print(clfSVM.best_params_)
-    
-    
     # Write a main part that calls the different 
     # functions to perform the required tasks and repeat your experiments.
-    clf = build_NeuralNetwork_classifier(X_training, y_training)
-    score = clf.evaluate(X_testing, y_testing, batch_size=30)
-    print(score)
+    X, y = prepare_dataset("medical_records.data")
+#    dataSplit = float(input("Enter a test_size double: "))
+    dataSplit = 0.3
+    X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=dataSplit, shuffle=True)
+    print("Out of ", math.ceil(len(X)*dataSplit), "predictions: ")
+    
+    clfDT = build_DecisionTree_classifier(X_training, y_training)
+    print("~ Decision Tree ~")
+    printReport(clfDT, X_testing, y_testing)
+    
+    clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
+    print("~ Nearest Neighbour ~")
+    printReport(clfKNN, X_testing, y_testing)
+    
+    clfSVM = build_SupportVectorMachine_classifier(X_training, y_training)
+    print("~ Support Vector Machine ~")
+    printReport(clfSVM, X_testing, y_testing)    
 
-    # call your functions here
+    print("~ Neural Network ~")
+    clf = build_NeuralNetwork_classifier(X_training, y_training)
+    score = clf.evaluate(X_training, y_training, verbose=0)
+    print("Evaluated score is: ", score)
     
 
 
