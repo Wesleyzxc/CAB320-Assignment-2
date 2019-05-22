@@ -1,21 +1,14 @@
-
 '''
-
 Scaffolding code for the Machine Learning assignment. 
-
 You should complete the provided functions and add more functions and classes as necessary.
  
 You are strongly encourage to use functions of the numpy, sklearn and tensorflow libraries.
-
 You are welcome to use the pandas library if you know it.
-
-
 '''
 #import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
-from keras.callbacks import EarlyStopping
 import math
 import numpy as np
 import csv
@@ -25,7 +18,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+# Keeping constant seed for graph
+np.random.seed(2)
 
 def my_team():
     '''
@@ -44,14 +38,11 @@ def prepare_dataset(dataset_path):
 	- the first field is a ID number 
 	- the second field is a class label 'B' or 'M'
 	- the remaining fields are real-valued
-
     Return two numpy arrays X and y where 
 	- X is two dimensional. X[i,:] is the ith example
 	- y is one dimensional. y[i] is the class label of X[i,:]
           y[i] should be set to 1 for 'M', and 0 for 'B'
-
     @param dataset_path: full path of the dataset text file
-
     @return
 	X,y
     '''
@@ -76,11 +67,9 @@ def prepare_dataset(dataset_path):
 def build_DecisionTree_classifier(X_training, y_training):
     '''  
     Build a Decision Tree classifier based on the training set X_training, y_training.
-
     @param 
 	X_training: X_training[i,:] is the ith example
 	y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
 	clf : the classifier built in this function
     '''
@@ -89,8 +78,17 @@ def build_DecisionTree_classifier(X_training, y_training):
     tree_depth = np.arange(1,100)
     gs = GridSearchCV(clf, param_grid={'max_depth':tree_depth}, iid=True, cv=3)
     
+    # Do manually for each result then plot max_depth against accuracy
+    clf = tree.DecisionTreeClassifier(max_depth=4)
+    gs = GridSearchCV(clf,param_grid={},iid=True, cv=3)    
+
+
     gs.fit(X_training, y_training)
-#    print(gs.score(X_training[250:500], y_training[250:500]))
+    K_fold_prediction = cross_val_score(gs, X_training, y_training, cv=3)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (K_fold_prediction.mean(), K_fold_prediction.std() * 2))
+    print("Cross validation scores are: ", K_fold_prediction)
+    print(gs.best_score_)
+    print(gs.best_params_)
     return gs
     
     
@@ -101,20 +99,19 @@ def build_DecisionTree_classifier(X_training, y_training):
 def build_NearrestNeighbours_classifier(X_training, y_training):
     '''  
     Build a Nearrest Neighbours classifier based on the training set X_training, y_training.
-
     @param 
 	X_training: X_training[i,:] is the ith example
 	y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
     clf = neighbors.KNeighborsClassifier()
-    num_neighbours = np.arange(5,100)
+    num_neighbours = np.arange(1,25)
     gs = GridSearchCV(clf, param_grid={ 'n_neighbors':num_neighbours  }, iid=True, cv=3)
     
     gs.fit(X_training, y_training)
+    print(gs.best_score_)
 #    print(clf.score(X_training[250:500], y_training[250:500]))
     return gs
     
@@ -125,18 +122,16 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
 def build_SupportVectorMachine_classifier(X_training, y_training):
     '''  
     Build a Support Vector Machine classifier based on the training set X_training, y_training.
-
     @param 
 	X_training: X_training[i,:] is the ith example
 	y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
     clf = svm.SVC(gamma="scale")
     C = np.arange(0.1, 5, dtype='float')
-    gs = GridSearchCV(clf, param_grid={ 'C':C }, cv=3)
+    gs = GridSearchCV(clf, param_grid={ 'C':C }, iid=True, cv=3)
     gs.fit(X_training, y_training)
     return gs
     
@@ -147,11 +142,9 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     Build a Neural Network with two dense hidden layers classifier 
     based on the training set X_training, y_training.
     Use the Keras functions from the Tensorflow library
-
     @param 
 	X_training: X_training[i,:] is the ith example
 	y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
 	clf : the classifier built in this function
     
@@ -187,8 +180,8 @@ def printReport(clf, X_test, y_test ):
     predicted = clf.predict(X_test)
     # binary classification to extract each data values
     tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
-    K_fold_prediction = cross_val_score(clf, X_test, y_test, cv=3)
-    print("Cross validation scores are: ", K_fold_prediction)
+#    K_fold_prediction = cross_val_score(clf, X_test, y_test, cv=3)
+#    print("Cross validation scores are: ", K_fold_prediction)
     print(tp, "/" , tp+fp , " predicted M correctly", fp, "/" , tp+fp, "predicted M wrongly")
     print(tn, "/" , tn+fn , " predicted B correctly", fn, "/" , tn+fn, "predicted B wrongly")
     print("Giving an accuracy of ", clf.score(X_test, y_test))
@@ -199,8 +192,8 @@ if __name__ == "__main__":
     # functions to perform the required tasks and repeat your experiments.
     X, y = prepare_dataset("medical_records.data")
 #    dataSplit = float(input("Enter a test_size double: "))
-    dataSplit = 0.3
-    X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=dataSplit, shuffle=True)
+    dataSplit = 0.2
+    X_training, X_testing, y_training, y_testing = train_test_split(X, y, test_size=dataSplit, shuffle=True, random_state=2)
     print("Out of ", math.ceil(len(X)*dataSplit), "predictions: ")
     
     clfDT = build_DecisionTree_classifier(X_training, y_training)
@@ -219,6 +212,3 @@ if __name__ == "__main__":
     clf = build_NeuralNetwork_classifier(X_training, y_training)
     score = clf.evaluate(X_training, y_training, verbose=0)
     print("Evaluated score is: ", score)
-    
-
-
