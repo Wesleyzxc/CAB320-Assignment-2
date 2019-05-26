@@ -10,6 +10,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import RMSprop
 import math
+import matplotlib.pyplot as plt
 import numpy as np
 import csv
 from sklearn import tree, neighbors, svm
@@ -74,21 +75,26 @@ def build_DecisionTree_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
+    print("~ Decision Tree ~") 
     clf = tree.DecisionTreeClassifier()
     tree_depth = np.arange(1,100)
     gs = GridSearchCV(clf, param_grid={'max_depth':tree_depth}, iid=True, cv=3)
-    
-    # Do manually for each result then plot max_depth against accuracy
-    clf = tree.DecisionTreeClassifier(max_depth=4)
-    gs = GridSearchCV(clf,param_grid={},iid=True, cv=3)    
 
-
-    gs.fit(X_training, y_training)
     K_fold_prediction = cross_val_score(gs, X_training, y_training, cv=3)
     print("Accuracy: %0.2f (+/- %0.2f)" % (K_fold_prediction.mean(), K_fold_prediction.std() * 2))
-    print("Cross validation scores are: ", K_fold_prediction)
-    print(gs.best_score_)
-    print(gs.best_params_)
+    print("Cross validation scores are:", K_fold_prediction)
+    
+    gs.fit(X_training, y_training)
+    
+#    dictResults = gs.cv_results_
+#    fig1, ax1 = plt.subplots()
+#    ax1.plot(tree_depth, dictResults.get("mean_test_score", ""))
+#    ax1.set_title("Hyperparameter testing for Decision Tree")
+#    ax1.set_xlabel('Max Depth (n)')
+#    ax1.set_ylabel('Accuracy')
+    
+    
+    print("The training set gave a best score of " + str(gs.best_score_))
     return gs
     
     
@@ -106,16 +112,28 @@ def build_NearrestNeighbours_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
+    print("~ Nearest Neighbour ~")
     clf = neighbors.KNeighborsClassifier()
     num_neighbours = np.arange(1,25)
     gs = GridSearchCV(clf, param_grid={ 'n_neighbors':num_neighbours  }, iid=True, cv=3)
+       
+    K_fold_prediction = cross_val_score(gs, X_training, y_training, cv=3)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (K_fold_prediction.mean(), K_fold_prediction.std() * 2))
+    print("Cross validation scores are:", K_fold_prediction)
     
     gs.fit(X_training, y_training)
-    print(gs.best_score_)
-#    print(clf.score(X_training[250:500], y_training[250:500]))
+    
+#    dictResults = gs.cv_results_
+#    fig2, ax2 = plt.subplots()
+#    ax2.plot(num_neighbours, dictResults.get("mean_test_score", ""))
+#    ax2.set_title("Hyperparameter testing for Nearest Neighbour")
+#    ax2.set_xlabel('Number of neighbours (n)')
+#    ax2.set_ylabel('Accuracy')
+    
+    
+    print("The training set gave a best score of " + str(gs.best_score_))
     return gs
     
-#x = build_NearrestNeighbours_classifier(prepare_dataset("medical_records.data")[0], prepare_dataset("medical_records.data")[1])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -129,10 +147,28 @@ def build_SupportVectorMachine_classifier(X_training, y_training):
 	clf : the classifier built in this function
     '''
     ##         "INSERT YOUR CODE HERE"    
+    print("~ Support Vector Machine ~")
     clf = svm.SVC(gamma="scale")
     C = np.arange(0.1, 5, dtype='float')
     gs = GridSearchCV(clf, param_grid={ 'C':C }, iid=True, cv=3)
+    
+    
+    K_fold_prediction = cross_val_score(gs, X_training, y_training, cv=3)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (K_fold_prediction.mean(), K_fold_prediction.std() * 2))
+    print("Cross validation scores are:", K_fold_prediction)
+    
     gs.fit(X_training, y_training)
+    
+#    dictResults = gs.cv_results_
+#    fig3, ax3 = plt.subplots()
+#    ax3.plot(C, dictResults.get("mean_test_score", ""))
+#    ax3.set_title("Hyperparameter testing for SVM")
+#    ax3.set_xlabel('C value')
+#    ax3.set_ylabel('Accuracy')
+    
+    
+    
+    print("The training set gave a best score of " + str(gs.best_score_))
     return gs
     
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,30 +202,40 @@ def build_NeuralNetwork_classifier(X_training, y_training):
     model.compile(loss='binary_crossentropy',
                   optimizer=rms,
                   metrics=['accuracy'])
+    epochSize = 150
     r = model.fit(X_train_scaled, y_training,
-              batch_size=30, epochs=150, verbose=0)
+              batch_size=30, epochs=epochSize, verbose=0)
     
-    acc = (r.history['acc'][-1])
-    print("Accuracy of: ", acc)
-#    score = model.evaluate(X_training, y_training, batch_size=128)\
+    accuracy = (r.history['acc'])
+    fig4, ax4 = plt.subplots()
+    ax4.plot(np.arange(1,epochSize+1, dtype="int"), accuracy)
+    ax4.set_title("Scoring after each run for Neural network")
+    ax4.set_xlabel('Epoch number (n)')
+    ax4.set_ylabel('Accuracy')
+    print("Accuracy of: ", accuracy[-1])
+
     return model
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     
-def printReport(clf, X_test, y_test ):
-    predicted = clf.predict(X_test)
-    # binary classification to extract each data values
-    tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
-#    K_fold_prediction = cross_val_score(clf, X_test, y_test, cv=3)
-#    print("Cross validation scores are: ", K_fold_prediction)
-    print(tp, "/" , tp+fp , " predicted M correctly", fp, "/" , tp+fp, "predicted M wrongly")
-    print(tn, "/" , tn+fn , " predicted B correctly", fn, "/" , tn+fn, "predicted B wrongly")
-    print("Giving an accuracy of ", clf.score(X_test, y_test))
-    print("With the best parameters: ", clf.best_params_ , "\n")
+
 
 if __name__ == "__main__":
     # Write a main part that calls the different 
     # functions to perform the required tasks and repeat your experiments.
+    
+    def printReport(clf, X_test, y_test ):
+        predicted = clf.predict(X_test)
+        # binary classification to extract each data values
+        tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
+    #    K_fold_prediction = cross_val_score(clf, X_test, y_test, cv=3)
+    #    print("Cross validation scores are: ", K_fold_prediction)
+        print(tp, "/" , tp+fp , " predicted M correctly", fp, "/" , tp+fp, "predicted M wrongly")
+        print(tn, "/" , tn+fn , " predicted B correctly", fn, "/" , tn+fn, "predicted B wrongly")
+        print("The test set gave an accuracy of ", clf.score(X_test, y_test))
+        print("With the best parameters: ", clf.best_params_ , "\n")
+    
+    
     X, y = prepare_dataset("medical_records.data")
 #    dataSplit = float(input("Enter a test_size double: "))
     dataSplit = 0.2
@@ -197,15 +243,12 @@ if __name__ == "__main__":
     print("Out of ", math.ceil(len(X)*dataSplit), "predictions: ")
     
     clfDT = build_DecisionTree_classifier(X_training, y_training)
-    print("~ Decision Tree ~")
     printReport(clfDT, X_testing, y_testing)
     
     clfKNN = build_NearrestNeighbours_classifier(X_training, y_training)
-    print("~ Nearest Neighbour ~")
     printReport(clfKNN, X_testing, y_testing)
-    
+ 
     clfSVM = build_SupportVectorMachine_classifier(X_training, y_training)
-    print("~ Support Vector Machine ~")
     printReport(clfSVM, X_testing, y_testing)    
 
     print("~ Neural Network ~")
